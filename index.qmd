@@ -1,0 +1,200 @@
+---
+title: "Clásificación de Recetas"
+author: "SAR"
+format: html
+lang: es
+toc: true
+theme: sketchy
+
+---
+
+### Conjunto de Datos: "Multi-Cuisine Recipe Dataset"
+
+### Fuente:https://www.kaggle.com/datasets/sonalshinde123/multi-cuisine-recipe-dataset/data
+
+### Descripción: es una recopilación de 620 recetas que representan a multiples gastronomía del mundo, principalmente de la India.
+
+### Filas:620 Columnas:5
+
+```{r}
+#| label: cargar-paquetes
+#| echo: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(plotly)
+library(DT)
+library(scales)
+library(ggthemes)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+
+```
+
+```{r}
+#| label: cargar-datos
+#| echo: false
+#| warning: false
+#| message: false
+
+Recipes  <- read_csv("Multi_Cuisine_Recipe_Dataset.csv")
+```
+
+# Introducción 
+
+Este documento quiere hacer ver distintas variables a partir de las recetas de cocina alrededor del mundo. 
+
+## Tabla de Datos
+
+```{r}
+#| label: tabla de inicio
+#| code-fold: true
+
+# Tabla de datos de recetas, name, area y category
+Recipes |> 
+  select(name, area, category) |>
+  datatable(
+  options = list(
+    pageLength = 5,
+    language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
+  )
+)
+
+```
+En esta tabla se muestra los nombres de las recetas, el lugar de donde vienen y su categoria.
+
+# Gráfico 1- Área x Categoría
+
+```{r}
+#| label: Gráfico 1
+#| code-fold: true
+#| warning: false
+
+data_pais <- Recipes |>
+  count(area)
+
+grafico <- data_pais |>
+  ggplot(aes(
+    x = reorder(area, n),
+    y = n,
+    fill = area
+  )) +
+  geom_col() +
+  coord_flip() +
+  theme_solarized()
+
+grafico
+```
+# Gráfico Interactivo 1 - Área x Categoría
+
+```{r}
+#| label: Gráfico 2
+#| code-fold: true
+#| warning: false
+
+data_pais <- Recipes |>
+  count(area)
+
+grafico <- data_pais |>
+  ggplot(aes(
+    x = reorder(area, n),
+    y = n,
+    fill = area,
+    text = paste("Área:", area, "<br>Cantidad:", n)
+  )) +
+  geom_col() +
+  coord_flip() +
+  theme_solarized()
+
+ggplotly(grafico, tooltip = "text") |>
+  config(locale = "es")
+```
+Esta tabla lo que hace es retratar las categorias de las comidas junto con el lugar al que pertenecen, pero vamos a ver cuantos hay en total:
+
+
+
+# Gráfico 2 - Cantidad x Categorías
+
+```{r}
+#| label: cantidadxcategorias
+#| code-fold: true
+#| warning: false
+
+library(dplyr)
+library(ggplot2)
+
+grafico <- Recipes |>
+  count(category) |>
+  ggplot(aes(
+    x = category,
+    y = n,
+    color = category
+  )) +
+  geom_point(size = 3) +
+  theme_solarized() +
+  theme(
+    axis.text.x = element_text(size = 6.5, angle = 45, hjust = 1)
+  )
+
+grafico
+```
+```{r}
+#| label: conteo de categorias
+#| code-fold: true
+#| warning: false
+
+Recipes |> 
+  count(category) |>
+  print(n = Inf)
+```
+
+# Gráfico Interactivo 2 - Categoría x Cantidad
+
+```{r}
+#| label: cantidadxcategorias2
+#| code-fold: true
+#| warning: false
+grafico <- Recipes |>
+  count(category) |>
+  ggplot(aes(
+    x = category,
+    y = n,
+    color = category
+  )) +
+  geom_point(size = 3) +
+  theme_solarized() +
+  theme(
+    axis.text.x = element_text(size = 6.5, angle = 45, hjust = 1)
+  )
+
+
+ggplotly(grafico)
+```
+
+# Gráfico 3, Pastel, Categorías y Cantidad en India.
+
+```{r}
+#| label: pastel
+#| warning: false 
+#| message: false
+#| code-fold: true
+
+# Gráfico de pastel interactivo
+
+datos_pie <- Recipes |>
+  filter(area == "Indian") |>
+  count(category)
+
+plot_ly(
+  data = datos_pie,
+  labels = ~category,
+  values = ~n,
+  type = "pie",
+  textinfo = "label+percent",
+  hoverinfo = "label+value+percent"
+) |>
+  layout(title = "Cantidad de recetas en India por categoría") |>
+  config(locale = "es")
+```
